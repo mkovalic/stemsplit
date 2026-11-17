@@ -1,0 +1,2 @@
+# Local client only; ML dependencies are defined in the Modal image.
+modal==1.6.4
