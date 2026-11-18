@@ -34,7 +34,7 @@ For an optional repeatability check, `python -m modal run benchmark_demucs.py` p
 
 ## Full tutorial
 
-[Read the guide](docs/how-to-make-a-vocal-separation-engine-for-music.md), or open the [HTML version](docs/how-to-make-a-vocal-separation-engine-for-music.html) locally for section navigation and **Copy page as Markdown**.
+[Read the full tutorial](https://mkovalic.github.io/stemsplit/) with section navigation and **Copy page as Markdown**, or view the [Markdown source](docs/how-to-make-a-vocal-separation-engine-for-music.md).
 
 After editing the guide, rebuild the HTML:
 
@@ -42,3 +42,5 @@ After editing the guide, rebuild the HTML:
 python -m pip install -r requirements-docs.txt
 python docs/build_preview.py
 ```
+
+GitHub Pages publishes the `docs/` folder from `main`. Commit and push the rebuilt HTML files to update the hosted guide.
