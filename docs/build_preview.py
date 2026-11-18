@@ -79,11 +79,12 @@ template = r'''<!doctype html>
     main { min-width:0; }
     .title-row { display:flex; align-items:flex-start; gap:24px; margin-bottom:30px; }
     .title-row h1 { flex:1; min-width:0; margin:0; }
-    .title-row .copy-wrap { flex-shrink:0; margin-top:5px; }
+    .title-actions { display:flex; flex-direction:column; align-items:flex-end; gap:8px; flex-shrink:0; margin-top:5px; }
     .copy-wrap { position:relative; }
-    .copy-trigger { display:inline-flex; align-items:center; gap:9px; border:1px solid #484848; border-radius:6px; background:transparent; padding:7px 11px; font-size:13px; line-height:20px; white-space:nowrap; }
-    .copy-trigger:hover { background:var(--hover); }
-    .copy-trigger svg { width:15px; height:15px; }
+    .copy-trigger, .github-link { display:inline-flex; align-items:center; gap:9px; border:1px solid #484848; border-radius:6px; background:transparent; padding:7px 11px; font-size:13px; line-height:20px; white-space:nowrap; }
+    .copy-trigger:hover, .github-link:hover { background:var(--hover); text-decoration:none; }
+    .copy-trigger svg, .github-link svg { width:15px; height:15px; }
+    .github-link { color:var(--text); }
     .copy-menu { position:absolute; right:0; top:calc(100% + 9px); width:300px; padding:6px; border:1px solid #454545; border-radius:9px; background:#202020; z-index:5; box-shadow:0 12px 32px #0006; }
     .copy-menu[hidden] { display:none; }
     .copy-menu button { display:block; text-align:left; width:100%; border:0; border-radius:5px; background:transparent; padding:11px 12px; line-height:1.45; }
@@ -143,12 +144,12 @@ template = r'''<!doctype html>
     }
     @media (max-width:600px) {
       .title-row { flex-direction:column; gap:16px; margin-bottom:27px; }
-      .title-row .copy-wrap { margin-top:0; }
+      .title-actions { flex-direction:row; flex-wrap:wrap; align-items:center; margin-top:0; }
       .copy-menu { left:0; right:auto; max-width:calc(100vw - 44px); }
     }
     @media (max-width:430px) { body { font-size:15px; } .layout { padding-left:18px; padding-right:18px; } h1 { font-size:30px; } .copy-menu { width:280px; } pre { padding:14px 12px; } pre code { font-size:12px; } th,td { padding:11px 12px; } }
     @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } #status { transition:none; } }
-    @media print { body { background:white; color:#222; font-size:11pt; } .copy-wrap,aside,.code-copy,#status { display:none; } .layout { display:block; max-width:none; padding:0; } h1,h2,strong { color:#111; } h1 { font-size:26pt; } h2 { break-after:avoid; font-size:17pt; } a { color:#222; text-decoration:underline; } pre,pre code,pre span,code { color:#222 !important; } .code-block,th,:not(pre)>code { background:#f5f5f5; } pre { white-space:pre-wrap; overflow:visible; } pre code { white-space:pre-wrap; font-size:9pt; } .code-block,table { break-inside:avoid; } }
+    @media print { body { background:white; color:#222; font-size:11pt; } .title-actions,aside,.code-copy,#status { display:none; } .layout { display:block; max-width:none; padding:0; } h1,h2,strong { color:#111; } h1 { font-size:26pt; } h2 { break-after:avoid; font-size:17pt; } a { color:#222; text-decoration:underline; } pre,pre code,pre span,code { color:#222 !important; } .code-block,th,:not(pre)>code { background:#f5f5f5; } pre { white-space:pre-wrap; overflow:visible; } pre code { white-space:pre-wrap; font-size:9pt; } .code-block,table { break-inside:avoid; } }
   </style>
 </head>
 <body>
@@ -158,6 +159,7 @@ template = r'''<!doctype html>
       <article>
       <div class="title-row">
         __TITLE__
+        <div class="title-actions">
         <div class="copy-wrap">
           <button type="button" class="copy-trigger" id="copy-trigger" aria-expanded="false" aria-controls="copy-menu">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h4"/></svg>
@@ -168,6 +170,11 @@ template = r'''<!doctype html>
             <button type="button" id="copy-markdown"><b>Copy page</b><small>Copy page as Markdown for LLMs</small></button>
             <button type="button" id="download-markdown"><b>Download Markdown</b><small>Save the complete tutorial as a .md file</small></button>
           </div>
+        </div>
+        <a class="github-link" href="https://github.com/mkovalic/stemsplit" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .75a11.25 11.25 0 0 0-3.558 21.922c.563.104.77-.244.77-.542 0-.267-.01-.974-.015-1.911-3.13.68-3.79-1.509-3.79-1.509-.512-1.3-1.25-1.646-1.25-1.646-1.022-.699.077-.685.077-.685 1.13.08 1.724 1.16 1.724 1.16 1.005 1.722 2.636 1.225 3.278.937.102-.728.393-1.225.715-1.507-2.498-.284-5.124-1.249-5.124-5.563 0-1.229.44-2.233 1.16-3.02-.116-.285-.503-1.429.11-2.978 0 0 .945-.303 3.094 1.153A10.79 10.79 0 0 1 12 6.182c.956.005 1.919.129 2.82.379 2.148-1.456 3.092-1.153 3.092-1.153.615 1.55.228 2.693.112 2.978.722.787 1.158 1.791 1.158 3.02 0 4.325-2.63 5.276-5.135 5.554.404.349.764 1.04.764 2.096 0 1.514-.014 2.735-.014 3.107 0 .3.203.65.774.54A11.252 11.252 0 0 0 12 .75Z"/></svg>
+          View on GitHub
+        </a>
         </div>
       </div>
       __ARTICLE__</article>
