@@ -48,7 +48,8 @@ for i, token in enumerate(tokens):
         token.attrSet("id", anchor)
         if token.tag == "h2":
             headings.append((anchor, title))
-article = parser.renderer.render(tokens, parser.options, {})
+title_html = parser.renderer.render(tokens[:3], parser.options, {})
+article = parser.renderer.render(tokens[3:], parser.options, {})
 toc = "\n".join(
     f'<li><a href="#{anchor}">{escape(title)}</a></li>' for anchor, title in headings
 )
@@ -66,23 +67,19 @@ template = r'''<!doctype html>
   <style>
     :root { --bg:#181818; --panel:#222222; --text:#c0c0c0; --strong:#f4f4f2; --muted:#919191; --line:#343434; --accent:#91d94b; --hover:#262626; }
     * { box-sizing:border-box; }
-    html { scroll-behavior:smooth; scroll-padding-top:100px; }
+    html { scroll-behavior:smooth; scroll-padding-top:24px; }
     body { margin:0; background:var(--bg); color:var(--text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-size:16px; line-height:1.65; }
     a { color:var(--accent); text-decoration:none; text-underline-offset:3px; }
     a:hover { text-decoration:underline; }
-    a:focus-visible, button:focus-visible, summary:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
+    a:focus-visible, button:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
     button { font:inherit; cursor:pointer; color:inherit; }
     .skip { position:absolute; left:20px; top:-80px; padding:8px 14px; background:var(--panel); z-index:20; }
     .skip:focus { top:10px; }
-    .site-header { position:sticky; top:0; z-index:10; background:var(--bg); border-bottom:1px solid var(--line); }
-    .header-inner { max-width:1200px; margin:auto; padding:16px 32px; display:flex; align-items:center; justify-content:space-between; gap:20px; }
-    .wordmark { color:var(--strong); font-size:16px; font-weight:600; letter-spacing:-.3px; }
-    .wordmark span { color:var(--accent); font-weight:400; margin-left:5px; }
-    .header-link { color:var(--text); font-size:13px; }
     .layout { max-width:1200px; margin:0 auto; padding:44px 32px 100px; display:grid; grid-template-columns:minmax(0,780px) 224px; gap:64px; }
     main { min-width:0; }
-    .page-tools { display:flex; align-items:center; justify-content:space-between; gap:20px; margin-bottom:25px; }
-    .eyebrow { font-size:12px; color:var(--muted); letter-spacing:.09em; text-transform:uppercase; }
+    .title-row { display:flex; align-items:flex-start; gap:24px; margin-bottom:30px; }
+    .title-row h1 { flex:1; min-width:0; margin:0; }
+    .title-row .copy-wrap { flex-shrink:0; margin-top:5px; }
     .copy-wrap { position:relative; }
     .copy-trigger { display:inline-flex; align-items:center; gap:9px; border:1px solid #484848; border-radius:6px; background:transparent; padding:7px 11px; font-size:13px; line-height:20px; white-space:nowrap; }
     .copy-trigger:hover { background:var(--hover); }
@@ -95,7 +92,7 @@ template = r'''<!doctype html>
     .copy-menu small { display:block; color:var(--muted); font-size:12px; margin-top:3px; }
     h1, h2 { color:var(--strong); font-weight:550; letter-spacing:-.035em; line-height:1.25; }
     h1 { font-size:38px; margin:0 0 30px; max-width:740px; }
-    h2 { margin:52px 0 24px; padding-top:8px; font-size:25px; scroll-margin-top:85px; }
+    h2 { margin:52px 0 24px; padding-top:8px; font-size:25px; }
     p { margin:0 0 22px; }
     strong { color:var(--strong); font-weight:600; }
     ul { padding-left:24px; margin:0 0 24px; }
@@ -120,7 +117,7 @@ template = r'''<!doctype html>
     th { color:var(--strong); font-weight:500; background:var(--panel); }
     th, td { padding:13px 18px; border-bottom:1px solid var(--line); }
     tr:last-child td { color:var(--strong); }
-    aside { position:sticky; top:102px; height:max-content; font-size:13px; }
+    aside { position:sticky; top:32px; height:max-content; font-size:13px; }
     .toc-label { color:var(--strong); font-weight:500; margin:0 0 16px 14px; }
     .toc { list-style:none; padding:0; border-left:1px solid var(--line); }
     .toc li { margin:0; }
@@ -128,8 +125,6 @@ template = r'''<!doctype html>
     .toc a:hover { color:var(--strong); text-decoration:none; }
     .toc a[aria-current="location"] { border-left-color:var(--accent); color:var(--strong); background:linear-gradient(90deg,#ffffff05,transparent); }
     .aside-download { display:block; margin:25px 0 0 14px; color:var(--muted); font-size:12px; }
-    .mobile-toc { display:none; }
-    .footer { border-top:1px solid var(--line); margin-top:48px; padding-top:18px; color:var(--muted); font-size:12px; }
     #status { position:fixed; left:50%; bottom:28px; transform:translateX(-50%); padding:10px 18px; border:1px solid #526442; border-radius:7px; background:#24301d; color:#deefd1; font-size:13px; z-index:30; opacity:0; pointer-events:none; transition:opacity .15s; }
     #status.visible { opacity:1; }
     dialog { width:min(780px,calc(100% - 32px)); padding:24px; border:1px solid #555; border-radius:9px; background:var(--panel); color:var(--text); }
@@ -141,30 +136,28 @@ template = r'''<!doctype html>
     dialog form button { border:1px solid #555; background:transparent; border-radius:4px; padding:6px 16px; }
     @media (max-width:1050px) { .layout { gap:36px; grid-template-columns:minmax(0,1fr) 200px; } h1 { font-size:35px; } }
     @media (max-width:800px) {
-      .header-inner { padding:14px 22px; }
       .layout { display:block; max-width:760px; padding:30px 22px 70px; }
       aside { display:none; }
-      .mobile-toc { display:block; margin-bottom:27px; border-bottom:1px solid var(--line); padding-bottom:14px; font-size:13px; }
-      .mobile-toc summary { cursor:pointer; color:var(--text); }
-      .mobile-toc ul { margin-top:12px; margin-bottom:4px; padding-left:18px; }
-      h1 { font-size:32px; margin-bottom:27px; }
+      h1 { font-size:32px; }
       h2 { font-size:24px; margin-top:42px; }
     }
-    @media (max-width:430px) { body { font-size:15px; } .header-inner { padding:13px 18px; } .header-link { font-size:12px; } .layout { padding-left:18px; padding-right:18px; } h1 { font-size:30px; } .page-tools { gap:12px; } .eyebrow { font-size:10px; } .copy-menu { width:280px; } pre { padding:14px 12px; } pre code { font-size:12px; } th,td { padding:11px 12px; } }
+    @media (max-width:600px) {
+      .title-row { flex-direction:column; gap:16px; margin-bottom:27px; }
+      .title-row .copy-wrap { margin-top:0; }
+      .copy-menu { left:0; right:auto; max-width:calc(100vw - 44px); }
+    }
+    @media (max-width:430px) { body { font-size:15px; } .layout { padding-left:18px; padding-right:18px; } h1 { font-size:30px; } .copy-menu { width:280px; } pre { padding:14px 12px; } pre code { font-size:12px; } th,td { padding:11px 12px; } }
     @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } #status { transition:none; } }
-    @media print { body { background:white; color:#222; font-size:11pt; } .site-header,.page-tools,aside,.mobile-toc,.code-copy,.footer,#status { display:none; } .layout { display:block; max-width:none; padding:0; } h1,h2,strong { color:#111; } h1 { font-size:26pt; } h2 { break-after:avoid; font-size:17pt; } a { color:#222; text-decoration:underline; } pre,pre code,pre span,code { color:#222 !important; } .code-block,th,:not(pre)>code { background:#f5f5f5; } pre { white-space:pre-wrap; overflow:visible; } pre code { white-space:pre-wrap; font-size:9pt; } .code-block,table { break-inside:avoid; } }
+    @media print { body { background:white; color:#222; font-size:11pt; } .copy-wrap,aside,.code-copy,#status { display:none; } .layout { display:block; max-width:none; padding:0; } h1,h2,strong { color:#111; } h1 { font-size:26pt; } h2 { break-after:avoid; font-size:17pt; } a { color:#222; text-decoration:underline; } pre,pre code,pre span,code { color:#222 !important; } .code-block,th,:not(pre)>code { background:#f5f5f5; } pre { white-space:pre-wrap; overflow:visible; } pre code { white-space:pre-wrap; font-size:9pt; } .code-block,table { break-inside:avoid; } }
   </style>
 </head>
 <body>
   <a class="skip" href="#article">Skip to content</a>
-  <header class="site-header"><div class="header-inner">
-    <a class="wordmark" href="#">Stem separation<span>Tutorial</span></a>
-    <a class="header-link" href="https://modal.com/docs/">Modal documentation ↗</a>
-  </div></header>
   <div class="layout">
     <main id="article">
-      <div class="page-tools">
-        <span class="eyebrow">Audio / Demucs on Modal</span>
+      <article>
+      <div class="title-row">
+        __TITLE__
         <div class="copy-wrap">
           <button type="button" class="copy-trigger" id="copy-trigger" aria-expanded="false" aria-controls="copy-menu">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h4"/></svg>
@@ -177,9 +170,7 @@ template = r'''<!doctype html>
           </div>
         </div>
       </div>
-      <details class="mobile-toc"><summary>On this page</summary><ul>__TOC__</ul></details>
-      <article>__ARTICLE__</article>
-      <footer class="footer">Demucs · Modal · Python<br>Cost example based on a November 17, 2026 sample.</footer>
+      __ARTICLE__</article>
     </main>
     <aside aria-label="On this page">
       <p class="toc-label">On this page</p>
@@ -259,7 +250,7 @@ template = r'''<!doctype html>
     const sections = [...document.querySelectorAll('article h2')];
     function updateOutline() {
       let current = sections[0];
-      for (const section of sections) { if (section.getBoundingClientRect().top <= 170) current = section; }
+      for (const section of sections) { if (section.getBoundingClientRect().top <= 80) current = section; }
       for (const link of document.querySelectorAll('.toc a')) {
         if (link.hash === '#' + current.id) link.setAttribute('aria-current', 'location');
         else link.removeAttribute('aria-current');
@@ -273,6 +264,7 @@ template = r'''<!doctype html>
 '''
 
 html = (template.replace("__TOC__", toc)
+        .replace("__TITLE__", title_html)
         .replace("__ARTICLE__", article)
         .replace("__STEM__", STEM)
         .replace("__MARKDOWN__", json_source))

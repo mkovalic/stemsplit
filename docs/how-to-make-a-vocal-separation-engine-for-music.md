@@ -11,8 +11,6 @@ We’ll use [Demucs](https://github.com/adefossez/demucs), an open-source model 
 
 We’ll start with a single song, then submit several songs in parallel. Finally, we’ll use a small sample’s usage costs to estimate the cost of one million similar separations.
 
-The result is a working foundation for applications such as karaoke tools, remixing workflows, and music practice apps. Separation quality varies by recording, so some vocals or instruments may remain audible in the other stem.
-
 ## Set up Modal
 
 Start by creating a [Modal account](https://modal.com/). You’ll also need Python 3.11–3.15 installed locally and a [valid payment method](https://modal.com/docs/guide/gpu) on your Modal account to use a GPU.
@@ -261,6 +259,8 @@ Our twelve-call T4 sample averaged approximately **$0.008 per song**, including 
 | 1,000,000 | $8,000 |
 
 These estimates assume similar three-to-four-minute songs, T4 GPUs, and two WAV outputs per song. They extrapolate from a small sample and exclude credits, allowances, retained storage, retries, and additional application services. Using an L4 through the fallback configuration will change the cost and performance profile.
+
+For comparison, we estimate **$11,500–$14,400 per million similar songs on [Google Cloud Run with an L4 GPU](https://cloud.google.com/run/pricing)**, including compute and downloads, versus **about $8,000 on Modal**.
 
 For sustained traffic, model loading is a useful optimization target. The current implementation starts a new Demucs process for every song. Moving to its Python API inside a Modal class lets you load the model once with [`@modal.enter()`](https://modal.com/docs/guide/lifecycle-functions) and reuse it across calls in the same container.
 
